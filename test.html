@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尝试</title>
+</head>
+<body>
+    <input type="file" id="csvFile" accept=".csv">
+    <pre id="output"></pre>
+    <script>
+        document.getElementById('csvFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    const content_list = content.split('\r');
+                    document.getElementById('output').textContent = content_list.slice(1, 50);
+                };
+                reader.readAsText(file);
+            } else {
+                document.getElementById('output').textContent = '没有选中文件~~';
+            }
+        });
+    </script>
+</body>
+</html>

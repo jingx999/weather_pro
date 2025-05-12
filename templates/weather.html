@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+this is weather page ~~
+<h4>选择一个城市，展示对应的天气信息</h4>
+<div class="nav-list">
+    
+    {% for one_weather in weather_data %}
+    <tr>
+        <td>{{ one_weather.id }}</td>
+        <td>{{ one_weather.location }}</td>
+        <td>{{ one_weather.date_time }}</td>
+        <td>{{ one_weather.temperature_c }}</td>
+        <td>{{ one_weather.humidity_pct }}</td>
+        <td>{{ one_weather.precipitation_mm }}</td>
+        <td>{{ one_weather.wind_speed_kmh }}</td>
+        <br>
+    </tr>
+    {% endfor %}
+</div>
+
+
+<form action="" id="uploadForm">
+    <label for="uploadFile">上传CSV文件</label>
+    <input type="file" id="csvFile">
+    <button type="submit" accept=".csv">上传</button>
+</form>
+
+<pre id="output"></pre>
+
+<script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+{% endblock %}
