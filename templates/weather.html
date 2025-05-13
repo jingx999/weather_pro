@@ -1,25 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-this is weather page ~~
-<h4>选择一个城市，展示对应的天气信息</h4>
-<div class="nav-list">
-    
-    {% for one_weather in weather_data %}
-    <tr>
-        <td>{{ one_weather.id }}</td>
-        <td>{{ one_weather.location }}</td>
-        <td>{{ one_weather.date_time }}</td>
-        <td>{{ one_weather.temperature_c }}</td>
-        <td>{{ one_weather.humidity_pct }}</td>
-        <td>{{ one_weather.precipitation_mm }}</td>
-        <td>{{ one_weather.wind_speed_kmh }}</td>
-        <br>
-    </tr>
+
+<label for="city-select">选择一个城市，展示对应的天气信息</label>
+<select name="cities" id="city-select" onchange="loadWeatherData()">
+    {% for one_city in cities %}
+        <option value="{{ one_city }}" {% if loop.index == 1 %}selected{% endif %}>
+            {{ one_city }}
+        </option>
     {% endfor %}
-</div>
+</select>
 
-
-
+<canvas id="tempChart" width="400" height="200"></canvas>
+<canvas id="humidityChart" width="400" height="200"></canvas>
+<canvas id="precipitationChart" width="400" height="200"></canvas>
+<canvas id="windSpeedChart" width="400" height="200"></canvas>
 
 
 <form action="" id="uploadForm">
@@ -28,7 +22,62 @@ this is weather page ~~
     <button type="submit" accept=".csv">上传</button>
 </form>
 
-<pre id="output"></pre>
+<script>
+
+    let tempChart = null;
+    let humidityChart = null;
+    let precipitationChart = null;
+    let windSpeedChart = null;
+
+    async function loadWeatherData() {
+        const selectedCity = document.getElementById('city-select').value;
+        console.log(`Selected city: ${selectedCity}`); // Debug log
+
+
+        // 销毁旧图表
+        if (tempChart) { tempChart.destroy(); tempChart = null; }
+        if (humidityChart) { humidityChart.destroy(); humidityChart = null; }
+        if (precipitationChart) { precipitationChart.destroy(); precipitationChart = null; }
+        if (windSpeedChart) { windSpeedChart.destroy(); windSpeedChart = null; }
+
+        const response = await fetch(`/weather/${selectedCity}`);
+        const data = await response.json();
+
+        tempChart = createChart('tempChart', 'Temperature over Time', data.date_time, data.temperature_c);
+        humidityChart = createChart('humidityChart', 'Humidity over Time (%)', data.date_time, data.humidity_pct);
+        precipitationChart = createChart('precipitationChart', 'Precipitation over Time (mm)', data.date_time, data.precipitation_mm);
+        windSpeedChart = createChart('windSpeedChart', 'Wind Speed over Time (km/h)', data.date_time, data.wind_speed_kmh);
+    }
+
+    function createChart(canvasId, label, datas, values) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: datas,
+                datasets: [{
+                    labels: label,
+                    data: values,
+                    // backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    }
+
+
+    window.onload = loadWeatherData;
+</script>
+
 
 <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}

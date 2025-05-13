@@ -25,8 +25,23 @@ def index():
 def weather():
     # weather_data = Weather.query.all()
     # cities = db.session.query(Weather.location).distinct()
-    cities = db.session.execute(db.select(Weather.location).distinct())
+    cities = db.session.execute(db.select(Weather.location).distinct()).scalars().all()
     return render_template('weather.html', cities=cities)
+
+
+@app.route('/weather/<city>')
+def weather_city(city):
+    weather_data = Weather.query.filter_by(location=city).order_by(Weather.date_time).limit(100).all()
+    
+    data = {
+        "date_time": [wd.date_time for wd in weather_data],
+        "temperature_c": [wd.temperature_c for wd in weather_data],
+        "humidity_pct": [wd.humidity_pct for wd in weather_data],
+        "precipitation_mm": [wd.precipitation_mm for wd in weather_data],
+        "wind_speed_kmh": [wd.wind_speed_kmh for wd in weather_data],
+    }
+
+    return jsonify(data)
 
 
 @app.route('/about', methods=["GET"])
